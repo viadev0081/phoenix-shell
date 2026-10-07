@@ -1,35 +1,7 @@
 const std = @import("std");
 const Io = std.Io;
 const shell = @import("commands.zig");
-
-const banner =
-    \\ |=========================================|
-    \\ |  PhoenixShell v0.1.0 (на Zig 0.16.0)    |
-    \\ |  Введите 'help', чтобы увидеть команды. |
-    \\ |=========================================|
-    \\
-;
-
-const prompt = "> ";
-
-const Command = enum {
-    help,
-    echo,
-    add,
-    mul,
-    upper,
-    reverse,
-    lower,
-    len,
-    env,
-    args,
-    run,
-    clear,
-    exit,
-    fetch,
-    ver,
-    list
-};
+const lib = @import("lib.zig");
 
 pub fn main(init: std.process.Init) !void {
     const io = init.io;
@@ -44,10 +16,10 @@ pub fn main(init: std.process.Init) !void {
     var stdout_impl = Io.File.stdout().writer(io, &out_buf);
     const output = &stdout_impl.interface;
 
-    try output.writeAll(banner);
+    try output.writeAll(lib.banner);
 
     while (true) {
-        try output.writeAll(prompt);
+        try output.writeAll(lib.prompt);
         try output.flush();
 
         const line = readLine(input) catch |err| switch (err) {
@@ -69,7 +41,7 @@ pub fn main(init: std.process.Init) !void {
         const name = words.next().?;
         const rest = std.mem.trim(u8, command_line[name.len..], " \t");
 
-        const cmd = std.meta.stringToEnum(Command, name) orelse {
+        const cmd = std.meta.stringToEnum(lib.Command, name) orelse {
             try output.print("PhoenixShell неизвестная команда '{s}'. Введите 'help'.\n", .{name});
             continue;
         };
@@ -91,8 +63,78 @@ pub fn main(init: std.process.Init) !void {
             .env     => try shell.cmdEnv(output, init, rest),
             .args    => try shell.cmdArgs(output, init, arena),
             .run     => try shell.cmdRun(output, io, gpa, &words, rest),
-        }
+            .create => {
+                var args = std.mem.tokenizeAny(u8, rest, " \t");
+                const mode = args.next();
 
+                if (mode) |m| {
+                    if (std.mem.eql(u8, m, "-f") or std.mem.eql(u8, m, "-d")) {
+                        const path = args.next() orelse {
+                            try output.writeAll("Использование: add -f <filename> или add -d <dirname>\n");
+                            continue;
+                        };
+
+                        if (args.next() != null) {
+                            try output.writeAll("Укажите только один путь.\n");
+                            continue;
+                        }
+
+                        if (std.mem.eql(u8, m, "-f")) {
+                            shell.cmdAddFile(io, path) catch |err| {
+                                try output.print("Не удалось создать файл: {s}\n", .{@errorName(err)});
+                                continue;
+                            }; 
+                        }
+                        else {
+                            shell.cmdAddDir(io, path) catch |err| {
+                                try output.print("Не удалось создать директорию: {s}\n", .{@errorName(err)});
+                                continue;
+                            };
+                        }
+                    }
+                    else {
+                        try shell.cmdCalc(output, &words, .add);
+                    }
+                } 
+                else {
+                    try shell.cmdCalc(output, &words, .add);
+                }
+            },
+            .delete => {
+                var args = std.mem.tokenizeAny(u8, rest, " \t");
+                const mode = args.next() orelse {
+                    try output.writeAll("Использование: delete -f <filename> или delete -d <dirname>\n");
+                    continue;
+                };
+
+                const path = args.next() orelse {
+                    try output.writeAll("Укажите путь.\n");
+                    continue;
+                };
+
+                if (args.next() != null) {
+                    try output.writeAll("Укажите только один путь.\n");
+                    continue;
+                }
+
+                if (std.mem.eql(u8, mode, "-f")) {
+                    shell.cmdDeleteFile(io, path) catch |err| {
+                        try output.print("Не удалось удалить файл: {s}\n", .{@errorName(err)});
+                        continue;
+                    };
+                } 
+                else if (std.mem.eql(u8, mode, "-d")) {
+                    shell.cmdDeleteDir(io, path) catch |err| {
+                        try output.print("Не удалось удалить директорию: {s}\n", .{@errorName(err)});
+                        continue;
+                    };
+                } 
+                else {
+                    try output.writeAll("Неизвестный режим. Используйте -f или -d.\n");
+                    continue;
+                }
+            },
+        }
         try output.flush();
     }
 
