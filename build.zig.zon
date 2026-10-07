@@ -1,6 +1,6 @@
 .{
-    .name = .phoenix_shell,
-    .version = "0.0.0",
+    .name = "phoenix_shell",
+    .version = "0.2.0",
     .fingerprint = 0x95d60d12581c63b5,
     .minimum_zig_version = "0.16.0",
     .dependencies = .{},
