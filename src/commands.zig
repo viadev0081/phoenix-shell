@@ -1,40 +1,10 @@
 const std = @import("std");
 const Io = std.Io;
-
-// --- Цвета --- //
-const RESET = "\x1b[0m";
-const RED = "\x1b[31m";
-const GREEN = "\x1b[32m";
-const YELLOW = "\x1b[33m";
-const BLUE = "\x1b[34m";
-const MAGENTA = "\x1b[35m";
-const CYAN = "\x1b[36m";
-
-const help_table = [_]struct {
-    usage: []const u8,
-    desc: []const u8
-} {
-    .{ .usage = "help",             .desc = "показать эту справку" },
-    .{ .usage = "echo <текст>",     .desc = "напечатать текст обратно" },
-    .{ .usage = "add <a> <b>",      .desc = "сложить два целых числа" },
-    .{ .usage = "mul <a> <b>",      .desc = "умножить два целых числа" },
-    .{ .usage = "upper <текст>",    .desc = "текст В ВЕРХНЕМ РЕГИСТРЕ" },
-    .{ .usage = "reverse <текст>",  .desc = "перевернуть строку (побайтово)" },
-    .{ .usage = "lower <текст>",    .desc = "переводит текст в нижний регистр" },
-    .{ .usage = "len <текст>",      .desc = "длина строки в байтах (UTF-8)" },
-    .{ .usage = "env <ИМЯ>",        .desc = "показать переменную окружения" },
-    .{ .usage = "args",             .desc = "показать аргументы командной строки" },
-    .{ .usage = "run <prog> [arg]", .desc = "запустить внешнюю программу" },
-    .{ .usage = "clear",            .desc = "очистить экран терминала" },
-    .{ .usage = "exit",             .desc = "выйти из PhoenixShell" },
-    .{ .usage = "fetch",            .desc = "как neofetch или nitch но для PhoenixShell" },
-    .{ .usage = "ver",              .desc = "показывает версию PhoenixShell" },
-    .{ .usage = "list",             .desc = "выводит файлы в текущей папке" },
-};
+const lib = @import("lib.zig");
 
 pub fn cmdHelp(stdout: *Io.Writer) !void {
     try stdout.writeAll("\nДоступные команды:\n\n");
-    for (&help_table) |row| {
+    for (&lib.help_table) |row| {
         try stdout.print("  {s:<17} — {s}\n", .{ row.usage, row.desc });
     }
     try stdout.writeAll("\n");
@@ -151,27 +121,58 @@ pub fn cmdEnv(
 }
 
 pub fn cmdFetch(stdout: *Io.Writer) !void {
-    try stdout.print("{s} _______ {s}\n", .{ YELLOW, RESET });
-    try stdout.print("{s} |     | {s}\n", .{ YELLOW, RESET });
-    try stdout.print("{s} | ___ | {s}\n", .{ YELLOW, RESET });
-    try stdout.print("{s} | |_| | {s}\n", .{ YELLOW, RESET });
-    try stdout.print("{s} | ____|                                     __    __{s}\n", .{ YELLOW, RESET });
-    try stdout.print("{s} | | ___     _________ _____ __ __   ___ ___ \\ \\  / /   {s}\n", .{ YELLOW, RESET });
-    try stdout.print("{s} | | | |___  |  ___  | |   | | |\\ \\  | | | |  \\_\\/_/  {s}\n", .{ YELLOW, RESET });
-    try stdout.print("{s} | | | |_| | |  |_|  | |___| | | \\ \\ | | | |  / /\\ \\  {s}\n", .{ YELLOW, RESET });
-    try stdout.print("{s} |_| |_| |_| |_______| |____ |_|  \\_\\|_| |_| /_/  \\_\\ {s}\n", .{ YELLOW, RESET });
+    try stdout.print("{s} _______ {s}\n", .{ lib.YELLOW, lib.RESET });
+    try stdout.print("{s} |     | {s}\n", .{ lib.YELLOW, lib.RESET });
+    try stdout.print("{s} | ___ | {s}\n", .{ lib.YELLOW, lib.RESET });
+    try stdout.print("{s} | |_| | {s}\n", .{ lib.YELLOW, lib.RESET });
+    try stdout.print("{s} | ____|                                     __    __{s}\n", .{ lib.YELLOW, lib.RESET });
+    try stdout.print("{s} | | ___     _________ _____ __ __   ___ ___ \\ \\  / /   {s}\n", .{ lib.YELLOW, lib.RESET });
+    try stdout.print("{s} | | | |___  |  ___  | |   | | |\\ \\  | | | |  \\_\\/_/  {s}\n", .{ lib.YELLOW, lib.RESET });
+    try stdout.print("{s} | | | |_| | |  |_|  | |___| | | \\ \\ | | | |  / /\\ \\  {s}\n", .{ lib.YELLOW, lib.RESET });
+    try stdout.print("{s} |_| |_| |_| |_______| |____ |_|  \\_\\|_| |_| /_/  \\_\\ {s}\n", .{ lib.YELLOW, lib.RESET });
 
-    try stdout.print("{s} ================================================================ {s}\n", .{ YELLOW, RESET });
-    try stdout.print("{s} [USER]:  [deltaqxq]         {s}\n", .{ YELLOW, RESET }); // Ну или ваш какой-нибудь юзер
-    try stdout.print("{s} [OS]:    [neplohoy-os]      {s}\n", .{ YELLOW, RESET });
-    try stdout.print("{s} [HOST]:  [mega-krutoy-komp] {s}\n", .{ YELLOW, RESET });
-    try stdout.print("{s} [Shell]: [PhoenixShell (Zig) v0.1.0] {s}\n", .{ YELLOW, RESET });
-    try stdout.print("{s} [CPU]:   [potato-cpu-5000] {s}\n", .{ YELLOW, RESET });
-    try stdout.print("{s} [GPU]:   [ventilator-3000] {s}\n", .{ YELLOW, RESET });
+    try stdout.print("{s} ================================================================ {s}\n", .{ lib.YELLOW, lib.RESET });
+    try stdout.print("{s} [USER]:  [deltaqxq]         {s}\n", .{ lib.YELLOW, lib.RESET }); // Ну или ваш какой-нибудь юзер
+    try stdout.print("{s} [OS]:    [neplohoy-os]      {s}\n", .{ lib.YELLOW, lib.RESET });
+    try stdout.print("{s} [HOST]:  [mega-krutoy-komp] {s}\n", .{ lib.YELLOW, lib.RESET });
+    try stdout.print("{s} [Shell]: [PhoenixShell (Zig) v0.2.0] {s}\n", .{ lib.YELLOW, lib.RESET });
+    try stdout.print("{s} [CPU]:   [potato-cpu-5000] {s}\n", .{ lib.YELLOW, lib.RESET });
+    try stdout.print("{s} [GPU]:   [ventilator-3000] {s}\n", .{ lib.YELLOW, lib.RESET });
 }
 
 pub fn cmdVersion(stdout: *Io.Writer) !void {
-    try stdout.print("{s} PhoenixShell v0.1.0 {s} \n", .{ YELLOW, RESET });
+    try stdout.print("{s} PhoenixShell v0.2.0 {s} \n", .{ lib.YELLOW, lib.RESET });
+}
+
+pub fn cmdAddFile(
+    io: std.Io, 
+    filename: []const u8
+) !void {
+    var file = try std.Io.Dir.cwd().createFile(io, filename, .{
+        .exclusive = true,
+    });
+    defer file.close(io);
+}
+
+pub fn cmdAddDir(
+    io: std.Io, 
+    dirname: []const u8
+) !void {
+    try std.Io.Dir.cwd().createDir(io, dirname, .default_dir);
+}
+
+pub fn cmdDeleteFile(
+    io: std.Io, 
+    filename: []const u8
+) !void {
+    try std.Io.Dir.cwd().deleteFile(io, filename);
+}
+
+pub fn cmdDeleteDir(
+    io: std.Io, 
+    dirname: []const u8
+) !void {
+    try std.Io.Dir.cwd().deleteDir(io, dirname);
 }
 
 pub fn cmdList(
@@ -181,13 +182,13 @@ pub fn cmdList(
     const io = init.io;
 
     var dir = std.Io.Dir.cwd().openDir(io, ".", .{.iterate = true}) catch {
-        try stdout.print("{s} Не удалось открыть текущую папку. {s}\n", .{ RED, RESET });
+        try stdout.print("{s} Не удалось открыть текущую папку. {s}\n", .{ lib.RED, lib.RESET });
         return;
     };
 
     defer dir.close(io);
 
-    try stdout.print("{s} Файлы в текущей папке: {s}\n", .{ YELLOW, RESET });
+    try stdout.print("{s} Файлы в текущей папке: {s}\n", .{ lib.YELLOW, lib.RESET });
 
     var iter = dir.iterate();
     while (try iter.next(io)) |entry| {
