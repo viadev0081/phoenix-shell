@@ -16,7 +16,7 @@
 
 Качаем репозиторий:
 ```
-  git clone https://github.com/deltadev-rsc/phoenix-shell
+  git clone https://github.com/viadev0081/phoenix-shell
 ```
 
 Запускаем сборку:
