@@ -54,7 +54,7 @@ pub fn main(init: std.process.Init) !void {
             .exit  => break,
             .clear => try output.writeAll("\x1b[2J\x1b[3J\x1b[H"),
             .echo  => try output.print("{s}\n", .{rest}),
-            .add   => try shell.cmdCalc(output, &words, .add),
+            .addition => try shell.cmdCalc(output, &words, .add),
             .mul   => try shell.cmdCalc(output, &words, .mul),
             .upper => try shell.cmdUpper(output, rest),
             .lower => try shell.cmdLower(output, rest),
@@ -70,7 +70,7 @@ pub fn main(init: std.process.Init) !void {
                 if (mode) |m| {
                     if (std.mem.eql(u8, m, "-f") or std.mem.eql(u8, m, "-d")) {
                         const path = args.next() orelse {
-                            try output.writeAll("Использование: add -f <filename> или add -d <dirname>\n");
+                            try output.writeAll("Использование: create -f <filename> или add -d <dirname>\n");
                             continue;
                         };
 
