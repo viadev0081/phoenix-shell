@@ -145,12 +145,13 @@ pub fn cmdVersion(stdout: *Io.Writer) !void {
 }
 
 pub fn cmdAddFile(
-    io: std.Io, 
+    io: std.Io,
     filename: []const u8
 ) !void {
     var file = try std.Io.Dir.cwd().createFile(io, filename, .{
         .exclusive = true,
     });
+
     defer file.close(io);
 }
 
