@@ -63,6 +63,7 @@ pub fn main(init: std.process.Init) !void {
             .env     => try shell.cmdEnv(output, init, rest),
             .args    => try shell.cmdArgs(output, init, arena),
             .run     => try shell.cmdRun(output, io, gpa, &words, rest),
+            .colors => try shell.cmdColors(output),
             .create => {
                 var args = std.mem.tokenizeAny(u8, rest, " \t");
                 const mode = args.next();
