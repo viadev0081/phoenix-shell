@@ -48,10 +48,7 @@ fn printCalcUsage(stdout: *Io.Writer, op: CalcOp) Io.Writer.Error!void {
 
 // --- команды для вывода текста. --- //
 // --- перевод его в верхний регистр или переворачиавание слева направо --- //
-pub fn cmdUpper(
-    stdout: *Io.Writer,
-    text: []const u8
-) Io.Writer.Error !void {
+pub fn cmdUpper(stdout: *Io.Writer, text: []const u8) Io.Writer.Error!void {
     if (text.len == 0) {
         return stdout.writeAll("  синтаксис: upper <текст>\n");
     }
@@ -66,10 +63,7 @@ pub fn cmdUpper(
     try stdout.print("{s}\n", .{buf[0..text.len]});
 }
 
-pub fn cmdLower(
-    stdout: *Io.Writer,
-    text: []const u8
-) Io.Writer.Error !void {
+pub fn cmdLower(stdout: *Io.Writer, text: []const u8) Io.Writer.Error!void {
     if (text.len == 0) {
         return stdout.writeAll("  синтаксис: lower <текст>\n");
     }
@@ -84,10 +78,7 @@ pub fn cmdLower(
     try stdout.print("{s}\n", .{buf[0..text.len]});
 }
 
-pub fn cmdReverse(
-    stdout: *Io.Writer,
-    text: []const u8
-) Io.Writer.Error !void {
+pub fn cmdReverse(stdout: *Io.Writer, text: []const u8) Io.Writer.Error!void {
     if (text.len == 0) {
         return stdout.writeAll("  синтаксис: reverse <текст>\n");
     }
@@ -104,11 +95,7 @@ pub fn cmdReverse(
 }
 
 //--- Всякие базовые команды ---//
-pub fn cmdEnv(
-    stdout: *Io.Writer,
-    init: std.process.Init,
-    name: []const u8
-) Io.Writer.Error !void {
+pub fn cmdEnv(stdout: *Io.Writer, init: std.process.Init, name: []const u8) Io.Writer.Error!void {
     if (name.len == 0) {
         return stdout.writeAll("  синтаксис: env <ИМЯ>\n");
     }
@@ -140,14 +127,21 @@ pub fn cmdFetch(stdout: *Io.Writer) !void {
     try stdout.print("{s} [GPU]:   [ventilator-3000] {s}\n", .{ lib.YELLOW, lib.RESET });
 }
 
+pub fn cmdColors(stdout: *Io.Writer) !void {
+    try stdout.print("{s} ████ ", .{ lib.RED }); try stdout.print("{s} ████ ", .{ lib.GREEN }); try stdout.print("{s} ████ ", .{ lib.YELLOW }); try stdout.print("{s} ████ \n", .{ lib.BLUE }); 
+    try stdout.print("{s} ████ ", .{ lib.RED }); try stdout.print("{s} ████ ", .{ lib.GREEN }); try stdout.print("{s} ████ ", .{ lib.YELLOW }); try stdout.print("{s} ████ \n", .{ lib.BLUE });
+    try stdout.print("{s} ████ ", .{ lib.RED }); try stdout.print("{s} ████ ", .{ lib.GREEN }); try stdout.print("{s} ████ ", .{ lib.YELLOW }); try stdout.print("{s} ████ \n", .{ lib.BLUE });
+    try stdout.print("{s} ████ ", .{ lib.RED }); try stdout.print("{s} ████ ", .{ lib.GREEN }); try stdout.print("{s} ████ ", .{ lib.YELLOW }); try stdout.print("{s} ████ \n", .{ lib.BLUE });
+    try stdout.print("{s} ████ ", .{ lib.RED }); try stdout.print("{s} ████ ", .{ lib.GREEN }); try stdout.print("{s} ████ ", .{ lib.YELLOW }); try stdout.print("{s} ████ \n", .{ lib.BLUE });
+    try stdout.print("{s} ████ ", .{ lib.RED }); try stdout.print("{s} ████ ", .{ lib.GREEN }); try stdout.print("{s} ████ ", .{ lib.YELLOW }); try stdout.print("{s} ████ \n", .{ lib.BLUE });
+    try stdout.print("{s} ████ ", .{ lib.RED }); try stdout.print("{s} ████ ", .{ lib.GREEN }); try stdout.print("{s} ████ ", .{ lib.YELLOW }); try stdout.print("{s} ████ \n", .{ lib.BLUE });    
+}
+
 pub fn cmdVersion(stdout: *Io.Writer) !void {
     try stdout.print("{s} PhoenixShell v0.2.0 {s} \n", .{ lib.YELLOW, lib.RESET });
 }
 
-pub fn cmdAddFile(
-    io: std.Io,
-    filename: []const u8
-) !void {
+pub fn cmdAddFile(io: std.Io, filename: []const u8) !void {
     var file = try std.Io.Dir.cwd().createFile(io, filename, .{
         .exclusive = true,
     });
@@ -155,34 +149,22 @@ pub fn cmdAddFile(
     defer file.close(io);
 }
 
-pub fn cmdAddDir(
-    io: std.Io, 
-    dirname: []const u8
-) !void {
+pub fn cmdAddDir(io: std.Io, dirname: []const u8) !void {
     try std.Io.Dir.cwd().createDir(io, dirname, .default_dir);
 }
 
-pub fn cmdDeleteFile(
-    io: std.Io, 
-    filename: []const u8
-) !void {
+pub fn cmdDeleteFile(io: std.Io, filename: []const u8) !void {
     try std.Io.Dir.cwd().deleteFile(io, filename);
 }
 
-pub fn cmdDeleteDir(
-    io: std.Io, 
-    dirname: []const u8
-) !void {
+pub fn cmdDeleteDir(io: std.Io, dirname: []const u8) !void {
     try std.Io.Dir.cwd().deleteDir(io, dirname);
 }
 
-pub fn cmdList(
-    stdout: *Io.Writer,
-    init: std.process.Init
-) !void {
+pub fn cmdList(stdout: *Io.Writer, init: std.process.Init) !void {
     const io = init.io;
 
-    var dir = std.Io.Dir.cwd().openDir(io, ".", .{.iterate = true}) catch {
+    var dir = std.Io.Dir.cwd().openDir(io, ".", .{ .iterate = true }) catch {
         try stdout.print("{s} Не удалось открыть текущую папку. {s}\n", .{ lib.RED, lib.RESET });
         return;
     };
@@ -194,16 +176,12 @@ pub fn cmdList(
     var iter = dir.iterate();
     while (try iter.next(io)) |entry| {
         if (entry.name[0] != '.') {
-            try stdout.print("{s}\n", .{ entry.name });
+            try stdout.print("{s}\n", .{entry.name});
         }
     }
 }
 
-pub fn cmdArgs(
-    stdout: *Io.Writer,
-    init: std.process.Init,
-    arena: std.mem.Allocator
-) !void {
+pub fn cmdArgs(stdout: *Io.Writer, init: std.process.Init, arena: std.mem.Allocator) !void {
     const argv = try init.minimal.args.toSlice(arena);
     for (argv, 0..) |arg, i| {
         try stdout.print("argv[{d}] = {s}\n", .{ i, arg });
