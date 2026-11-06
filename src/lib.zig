@@ -32,6 +32,8 @@ pub const help_table = [_]struct {
     .{ .usage = "list",             .desc = "выводит файлы в текущей папке" }, 
     .{ .usage = "create < -f/-d > <name>", .desc = "создание файла или папки" }, 
     .{ .usage = "delete < -f/-d > <name>", .desc = "удаление файла или папки" },
+    .{ .usage = "cd <путь>",        .desc = "перейти в другую папку (без аргумента — в домашнюю)" },
+    .{ .usage = "pwd",              .desc = "показать путь до текущей папки" },
     .{ .usage = "colors",           .desc = "показывает все цвета в терминале" },
 };
 
@@ -43,7 +45,48 @@ pub const banner =
     \\
 ;
 
-pub const prompt = "> ";
+pub const prompt = "$";
+
+pub fn writePrompt(
+    writer: *std.Io.Writer,
+    io: std.Io,
+    home: ?[]const u8,
+) !void {
+    var buf: [std.fs.max_path_bytes]u8 = undefined;
+
+    try writer.writeAll(BLUE);
+    
+    if (std.process.currentPath(io, &buf)) |n| {
+        try writeShortPath(writer, buf[0..n], home);
+    } 
+    else |_| {
+        try writer.writeAll("?");
+    }
+    
+    try writer.print("{s} {s} {s}", .{ RED, prompt, RESET });
+}
+
+fn writeShortPath(
+    writer: *std.Io.Writer,
+    full_path: []const u8,
+    home: ?[]const u8,
+) !void {
+    if (home) |h| {
+        const root = std.mem.trimEnd(u8, h, "/");
+        if (root.len != 0 and std.mem.startsWith(u8, full_path, root)) {
+            const rest = full_path[root.len..];
+            if (rest.len == 0)  {
+                return writer.writeAll("~");
+            }
+
+            if (rest[0] == '/') {
+                return writer.print("~{s}", .{rest});
+            }
+        }
+    }
+
+    try writer.writeAll(full_path);
+}
 
 pub const Command = enum { 
     help, 
@@ -51,6 +94,8 @@ pub const Command = enum {
     addition, 
     create, 
     delete, 
+    cd,
+    pwd,
     mul, 
     upper, 
     reverse, 
