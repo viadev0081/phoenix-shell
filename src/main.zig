@@ -19,7 +19,7 @@ pub fn main(init: std.process.Init) !void {
     try output.writeAll(lib.banner);
 
     while (true) {
-        try output.writeAll(lib.prompt);
+        try lib.writePrompt(output, io, init.environ_map.get("HOME"));
         try output.flush();
 
         const line = readLine(input) catch |err| switch (err) {
@@ -51,6 +51,8 @@ pub fn main(init: std.process.Init) !void {
             .fetch => try shell.cmdFetch(output),
             .ver   => try shell.cmdVersion(output),
             .list  => try shell.cmdList(output, init),
+            .cd    => try shell.cmdChangeDir(output, init, rest),
+            .pwd   => try shell.cmdPwd(output, init),
             .exit  => break,
             .clear => try output.writeAll("\x1b[2J\x1b[3J\x1b[H"),
             .echo  => try output.print("{s}\n", .{rest}),
