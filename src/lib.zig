@@ -1,13 +1,15 @@
 const std = @import("std");
 
 // --- Цвета --- //
-pub const RESET = "\x1b[0m";
-pub const RED = "\x1b[31m";
-pub const GREEN = "\x1b[32m";
-pub const YELLOW = "\x1b[33m";
-pub const BLUE = "\x1b[34m";
+pub const RESET   = "\x1b[0m";
+pub const BLACK   = "\x1b[30m";
+pub const RED     = "\x1b[31m";
+pub const GREEN   = "\x1b[32m";
+pub const YELLOW  = "\x1b[33m";
+pub const BLUE    = "\x1b[34m";
 pub const MAGENTA = "\x1b[35m";
-pub const CYAN = "\x1b[36m";
+pub const CYAN    = "\x1b[36m";
+pub const WHITE   = "\x1b[79m";
 
 pub const help_table = [_]struct { 
     usage: []const u8, desc: []const u8 
