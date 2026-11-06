@@ -135,6 +135,18 @@ pub fn cmdColors(stdout: *Io.Writer) !void {
     try stdout.print("{s} ████ ", .{ lib.RED }); try stdout.print("{s} ████ ", .{ lib.GREEN }); try stdout.print("{s} ████ ", .{ lib.YELLOW }); try stdout.print("{s} ████ \n", .{ lib.BLUE });
     try stdout.print("{s} ████ ", .{ lib.RED }); try stdout.print("{s} ████ ", .{ lib.GREEN }); try stdout.print("{s} ████ ", .{ lib.YELLOW }); try stdout.print("{s} ████ \n", .{ lib.BLUE });
     try stdout.print("{s} ████ ", .{ lib.RED }); try stdout.print("{s} ████ ", .{ lib.GREEN }); try stdout.print("{s} ████ ", .{ lib.YELLOW }); try stdout.print("{s} ████ \n", .{ lib.BLUE });    
+    
+    try stdout.print("\n", .{});
+
+    try stdout.print("{s} ████ ", .{ lib.MAGENTA }); try stdout.print("{s} ████ ", .{lib.CYAN }); try stdout.print("{s} ████ ", .{lib.WHITE }); try stdout.print("{s} ████ \n", .{lib.BLACK });
+    try stdout.print("{s} ████ ", .{ lib.MAGENTA }); try stdout.print("{s} ████ ", .{lib.CYAN }); try stdout.print("{s} ████ ", .{lib.WHITE }); try stdout.print("{s} ████ \n", .{lib.BLACK });
+    try stdout.print("{s} ████ ", .{ lib.MAGENTA }); try stdout.print("{s} ████ ", .{lib.CYAN }); try stdout.print("{s} ████ ", .{lib.WHITE }); try stdout.print("{s} ████ \n", .{lib.BLACK });
+    try stdout.print("{s} ████ ", .{ lib.MAGENTA }); try stdout.print("{s} ████ ", .{lib.CYAN }); try stdout.print("{s} ████ ", .{lib.WHITE }); try stdout.print("{s} ████ \n", .{lib.BLACK });
+    try stdout.print("{s} ████ ", .{ lib.MAGENTA }); try stdout.print("{s} ████ ", .{lib.CYAN }); try stdout.print("{s} ████ ", .{lib.WHITE }); try stdout.print("{s} ████ \n", .{lib.BLACK });
+    try stdout.print("{s} ████ ", .{ lib.MAGENTA }); try stdout.print("{s} ████ ", .{lib.CYAN }); try stdout.print("{s} ████ ", .{lib.WHITE }); try stdout.print("{s} ████ \n", .{lib.BLACK });
+    try stdout.print("{s} ████ ", .{ lib.MAGENTA }); try stdout.print("{s} ████ ", .{lib.CYAN }); try stdout.print("{s} ████ ", .{lib.WHITE }); try stdout.print("{s} ████ \n", .{lib.BLACK });
+
+    try stdout.print("{s}", .{ lib.RESET });
 }
 
 pub fn cmdVersion(stdout: *Io.Writer) !void {
