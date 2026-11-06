@@ -10,7 +10,7 @@ pub fn cmdHelp(stdout: *Io.Writer) !void {
     try stdout.writeAll("\n");
 }
 
-// --- Для команд add и mul --- //
+// --- Для команд addition и mul --- //
 const CalcOp = enum { add, mul };
 
 pub fn cmdCalc(
@@ -42,13 +42,19 @@ pub fn cmdCalc(
     try stdout.print("{d} {s} {d} = {d}\n", .{ a, symbol, b, result });
 }
 
-fn printCalcUsage(stdout: *Io.Writer, op: CalcOp) Io.Writer.Error!void {
+fn printCalcUsage(
+    stdout: *Io.Writer, 
+    op: CalcOp
+) Io.Writer.Error!void {
     try stdout.print("  синтаксис: {s} <a> <b>\n", .{@tagName(op)});
 }
 
 // --- команды для вывода текста. --- //
 // --- перевод его в верхний регистр или переворачиавание слева направо --- //
-pub fn cmdUpper(stdout: *Io.Writer, text: []const u8) Io.Writer.Error!void {
+pub fn cmdUpper(
+    stdout: *Io.Writer, 
+    text: []const u8
+) Io.Writer.Error!void {
     if (text.len == 0) {
         return stdout.writeAll("  синтаксис: upper <текст>\n");
     }
@@ -63,7 +69,10 @@ pub fn cmdUpper(stdout: *Io.Writer, text: []const u8) Io.Writer.Error!void {
     try stdout.print("{s}\n", .{buf[0..text.len]});
 }
 
-pub fn cmdLower(stdout: *Io.Writer, text: []const u8) Io.Writer.Error!void {
+pub fn cmdLower(
+    stdout: *Io.Writer, 
+    text: []const u8
+) Io.Writer.Error!void {
     if (text.len == 0) {
         return stdout.writeAll("  синтаксис: lower <текст>\n");
     }
@@ -78,7 +87,10 @@ pub fn cmdLower(stdout: *Io.Writer, text: []const u8) Io.Writer.Error!void {
     try stdout.print("{s}\n", .{buf[0..text.len]});
 }
 
-pub fn cmdReverse(stdout: *Io.Writer, text: []const u8) Io.Writer.Error!void {
+pub fn cmdReverse(
+    stdout: *Io.Writer, 
+    text: []const u8
+) Io.Writer.Error!void {
     if (text.len == 0) {
         return stdout.writeAll("  синтаксис: reverse <текст>\n");
     }
@@ -95,7 +107,11 @@ pub fn cmdReverse(stdout: *Io.Writer, text: []const u8) Io.Writer.Error!void {
 }
 
 //--- Всякие базовые команды ---//
-pub fn cmdEnv(stdout: *Io.Writer, init: std.process.Init, name: []const u8) Io.Writer.Error!void {
+pub fn cmdEnv(
+    stdout: *Io.Writer, 
+    init: std.process.Init, 
+    name: []const u8
+) Io.Writer.Error!void {
     if (name.len == 0) {
         return stdout.writeAll("  синтаксис: env <ИМЯ>\n");
     }
@@ -153,7 +169,10 @@ pub fn cmdVersion(stdout: *Io.Writer) !void {
     try stdout.print("{s} PhoenixShell v0.2.0 {s} \n", .{ lib.YELLOW, lib.RESET });
 }
 
-pub fn cmdAddFile(io: std.Io, filename: []const u8) !void {
+pub fn cmdAddFile(
+    io: std.Io, 
+    filename: []const u8
+) !void {
     var file = try std.Io.Dir.cwd().createFile(io, filename, .{
         .exclusive = true,
     });
@@ -161,19 +180,84 @@ pub fn cmdAddFile(io: std.Io, filename: []const u8) !void {
     defer file.close(io);
 }
 
-pub fn cmdAddDir(io: std.Io, dirname: []const u8) !void {
+pub fn cmdAddDir(
+    io: std.Io, 
+    dirname: []const u8
+) !void {
     try std.Io.Dir.cwd().createDir(io, dirname, .default_dir);
 }
 
-pub fn cmdDeleteFile(io: std.Io, filename: []const u8) !void {
+pub fn cmdDeleteFile(
+    io: std.Io, 
+    filename: []const u8
+) !void {
     try std.Io.Dir.cwd().deleteFile(io, filename);
 }
 
-pub fn cmdDeleteDir(io: std.Io, dirname: []const u8) !void {
+pub fn cmdDeleteDir(
+    io: std.Io, 
+    dirname: []const u8
+) !void {
     try std.Io.Dir.cwd().deleteDir(io, dirname);
 }
 
-pub fn cmdList(stdout: *Io.Writer, init: std.process.Init) !void {
+pub fn cmdChangeDir(
+    stdout: *Io.Writer,
+    init: std.process.Init,
+    target: []const u8,
+) !void {
+    const io = init.io;
+    const home = init.environ_map.get("HOME");
+
+    var path_buf: [std.fs.max_path_bytes]u8 = undefined;
+    const path: []const u8 = blk: {
+        if (target.len == 0 or std.mem.eql(u8, target, "~")) {
+            break :blk home orelse {
+                try stdout.writeAll("PhoenixShell: cd: переменная HOME не установлена\n");
+                return;
+            };
+        }
+
+        if (std.mem.startsWith(u8, target, "~/")) {
+            const h = home orelse {
+                try stdout.writeAll("PhoenixShell: cd: переменная HOME не установлена\n");
+                return;
+            };
+            const root = std.mem.trimEnd(u8, h, "/");
+            break :blk std.fmt.bufPrint(&path_buf, "{s}/{s}", .{ root, target[2..] }) catch {
+                try stdout.writeAll("PhoenixShell: cd: путь слишком длинный\n");
+                return;
+            };
+        }
+
+        break :blk target;
+    };
+
+    std.process.setCurrentPath(io, path) catch |err| {
+        try stdout.print("PhoenixShell: cd: {s}: {s}\n", .{ target, @errorName(err) });
+        return;
+    };
+}
+
+pub fn cmdPwd(
+    stdout: *Io.Writer,
+    init: std.process.Init,
+) !void {
+    const io = init.io;
+    var buf: [std.fs.max_path_bytes]u8 = undefined;
+
+    const n = std.process.currentPath(io, &buf) catch |err| {
+        try stdout.print("PhoenixShell: pwd: {s}\n", .{@errorName(err)});
+        return;
+    };
+
+    try stdout.print("{s}\n", .{buf[0..n]});
+}
+
+pub fn cmdList(
+    stdout: *Io.Writer, 
+    init: std.process.Init
+) !void {
     const io = init.io;
 
     var dir = std.Io.Dir.cwd().openDir(io, ".", .{ .iterate = true }) catch {
@@ -193,7 +277,11 @@ pub fn cmdList(stdout: *Io.Writer, init: std.process.Init) !void {
     }
 }
 
-pub fn cmdArgs(stdout: *Io.Writer, init: std.process.Init, arena: std.mem.Allocator) !void {
+pub fn cmdArgs(
+    stdout: *Io.Writer, 
+    init: std.process.Init, 
+    arena: std.mem.Allocator
+) !void {
     const argv = try init.minimal.args.toSlice(arena);
     for (argv, 0..) |arg, i| {
         try stdout.print("argv[{d}] = {s}\n", .{ i, arg });
