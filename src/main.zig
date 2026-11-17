@@ -50,7 +50,7 @@ pub fn main(init: std.process.Init) !void {
             .help  => try shell.cmdHelp(output),
             .fetch => try shell.cmdFetch(output),
             .ver   => try shell.cmdVersion(output),
-            .list  => try shell.cmdList(output, init),
+            .ls    => try shell.cmdList(output, init),
             .cd    => try shell.cmdChangeDir(output, init, rest),
             .pwd   => try shell.cmdPwd(output, init),
             .exit  => break,
@@ -65,8 +65,15 @@ pub fn main(init: std.process.Init) !void {
             .env     => try shell.cmdEnv(output, init, rest),
             .args    => try shell.cmdArgs(output, init, arena),
             .run     => try shell.cmdRun(output, io, gpa, &words, rest),
-            .colors => try shell.cmdColors(output),
-            .create => {
+            .colors  => try shell.cmdColors(output),
+            .tui     => try shell.cmdTui(init),
+            .cat     => {
+                shell.cmdCat(io, rest) catch |err| {
+                    try output.print("Не удалось открыть файл для чтения: {s}\n", .{@errorName(err)});
+                    continue;
+                };
+            },
+            .create  => {
                 var args = std.mem.tokenizeAny(u8, rest, " \t");
                 const mode = args.next();
 
