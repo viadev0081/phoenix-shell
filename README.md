@@ -19,6 +19,11 @@
   git clone https://github.com/viadev0081/phoenix-shell
 ```
 
+Добавляем zig пакет для TUI библиотеки:
+```
+  zig fetch --save git+https://github.com/rockorager/libvaxis.git
+```
+
 Запускаем сборку:
 ```
   zig build
@@ -26,7 +31,7 @@
 
 Запуск бинарника:
 ```
-./zig-out/bin/phoenix_shell
+  ./zig-out/bin/phoenix_shell
 ```
 
 --------------------------------------------
