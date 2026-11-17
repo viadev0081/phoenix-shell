@@ -1,12 +1,16 @@
 const std = @import("std");
 const Io = std.Io;
 const lib = @import("lib.zig");
+const vaxis = @import("vaxis");
+const vxfw = vaxis.vxfw;
 
 pub fn cmdHelp(stdout: *Io.Writer) !void {
     try stdout.writeAll("\nДоступные команды:\n\n");
+    
     for (&lib.help_table) |row| {
         try stdout.print("  {s:<17} — {s}\n", .{ row.usage, row.desc });
     }
+
     try stdout.writeAll("\n");
 }
 
@@ -25,6 +29,7 @@ pub fn cmdCalc(
         try stdout.print("PhoenixShell: '{s}' — не целое число\n", .{a_str});
         return;
     };
+
     const b = std.fmt.parseInt(i64, b_str, 10) catch {
         try stdout.print("PhoenixShell: '{s}' — не целое число\n", .{b_str});
         return;
@@ -38,7 +43,8 @@ pub fn cmdCalc(
         return;
     };
 
-    const symbol: []const u8 = if (op == .add) "+" else "*";
+    const symbol: []const u8 = if (op == .add) "+" else "*"; 
+    
     try stdout.print("{d} {s} {d} = {d}\n", .{ a, symbol, b, result });
 }
 
@@ -58,6 +64,7 @@ pub fn cmdUpper(
     if (text.len == 0) {
         return stdout.writeAll("  синтаксис: upper <текст>\n");
     }
+
     if (text.len > 1024) {
         return stdout.writeAll("dltsh: текст слишком длинный\n");
     }
@@ -66,6 +73,7 @@ pub fn cmdUpper(
     for (text, 0..) |c, i| {
         buf[i] = if (c >= 'a' and c <= 'z') c + 'A' - 'a' else c;
     }
+    
     try stdout.print("{s}\n", .{buf[0..text.len]});
 }
 
@@ -76,6 +84,7 @@ pub fn cmdLower(
     if (text.len == 0) {
         return stdout.writeAll("  синтаксис: lower <текст>\n");
     }
+    
     if (text.len > 1024) {
         return stdout.writeAll("dltsh: текст слишком длинный\n");
     }
@@ -84,6 +93,7 @@ pub fn cmdLower(
     for (text, 0..) |c, i| {
         buf[i] = if (c >= 'A' and c <= 'Z') c + 'a' - 'A' else c;
     }
+    
     try stdout.print("{s}\n", .{buf[0..text.len]});
 }
 
@@ -103,6 +113,7 @@ pub fn cmdReverse(
     for (text, 0..) |c, i| {
         buf[text.len - 1 - i] = c;
     }
+    
     try stdout.print("{s}\n", .{buf[0..text.len]});
 }
 
@@ -169,6 +180,31 @@ pub fn cmdVersion(stdout: *Io.Writer) !void {
     try stdout.print("{s} PhoenixShell v0.2.0 {s} \n", .{ lib.YELLOW, lib.RESET });
 }
 
+pub fn cmdTui(
+    init: std.process.Init 
+) !void {
+    const io = init.io;
+    const alloc = init.gpa;
+
+    var buffer: [1024]u8 = undefined;
+    var app: vxfw.App = try .init(io, alloc, init.environ_map, &buffer);
+    defer app.deinit();
+
+    const model = try alloc.create(lib.Model);
+    defer alloc.destroy(model);
+
+    model.* = .{
+        .count = 0,
+        .button = .{
+            .label = "Тыкни на меня!",
+            .onClick = lib.Model.onClick,
+            .userdata = model,
+        },
+    };
+
+    try app.run(model.widget(), .{});
+}
+
 pub fn cmdAddFile(
     io: std.Io, 
     filename: []const u8
@@ -199,6 +235,28 @@ pub fn cmdDeleteDir(
     dirname: []const u8
 ) !void {
     try std.Io.Dir.cwd().deleteDir(io, dirname);
+}
+
+pub fn cmdCat(
+    io: std.Io,
+    filename: []const u8
+) !void {
+    const cwd = std.Io.Dir.cwd();
+
+    var file = try cwd.openFile(io, filename, .{});
+
+    var file_buf: [4096]u8 = undefined;
+    var file_reader = file.reader(io, &file_buf);
+
+    var stdout_buf: [4096]u8 = undefined;
+    var stdout_writer = std.Io.File.stdout().writer(io, &stdout_buf);
+    const stdout = &stdout_writer.interface;
+
+    _ = try file_reader.interface.streamRemaining(stdout);
+
+    try stdout.flush();
+
+    defer file.close(io);
 }
 
 pub fn cmdChangeDir(
@@ -251,7 +309,7 @@ pub fn cmdPwd(
         return;
     };
 
-    try stdout.print("{s}\n", .{buf[0..n]});
+    try stdout.print("{s}{s} {s}\n", .{ lib.YELLOW, buf[0..n], lib.RESET });
 }
 
 pub fn cmdList(
@@ -283,6 +341,7 @@ pub fn cmdArgs(
     arena: std.mem.Allocator
 ) !void {
     const argv = try init.minimal.args.toSlice(arena);
+    
     for (argv, 0..) |arg, i| {
         try stdout.print("argv[{d}] = {s}\n", .{ i, arg });
     }
@@ -311,6 +370,7 @@ pub fn cmdRun(
         });
         return;
     };
+    
     defer gpa.free(result.stdout);
     defer gpa.free(result.stderr);
 
